@@ -5,18 +5,16 @@
  *
  * @brief Initialize all sensors
  */
-#include "not.hpp"
 #include "mbed.h"
-
-// Sensors drivers present in the VL53L1X library
-#include "VL53L0X.h"
+#include "not.hpp"
+#include "pretty_print.hpp"
 
 // Initialize ToF device
 // all details please refer to manual:
 // https://www.st.com/resource/en/user_manual/um2153-discovery-kit-for-iot-node-multichannel-communication-with-stm32l4-stmicroelectronics.pdf
 DevI2C devI2c(PB_11, PB_10); 
-DigitalOut shutdown_pin(PC_6);
-VL53L0X range(&devI2c, &shutdown_pin, PC_7);
+DigitalOut shutdown_pin(PC_6); 
+VL53L0X range(&devI2c, &shutdown_pin, PC_7); 
 
 // Initialize the user button as interrupt input, using the high level api
 InterruptIn button(BUTTON1);
@@ -33,14 +31,41 @@ void button1_rise_handler()
 }
 
 /**
- * @brief Initialize the ToF sensors and register interrupts.
+ * @brief Extra initialization routines after BLE is done initializing.
  *
- * This function raises an assertion error if the sensors
- * cannot be initialized (need to check API again for this).
+ * @param event Information about the BLE initialization.
  */
-void flappy_init() {
-    range.init_sensor(0x53);
-    button.rise(&button1_rise_handler);
+void on_init_complete(BLE::InitializationCompleteCallbackContext *event)
+{
+    if (event->error) {
+        print_error(event->error, "Error during the initialisation");
+        return;
+    }
+
+    // You will see this in Mbed Studio and, if all goes well, on your
+    // Bluetooth Scanner
+    print_mac_address();
+
+    BLE &ble = BLE::Instance();
+    auto &gap = ble.gap();
+
+    // Setup the default phy used in connection to 2M to reduce power consumption
+    if (gap.isFeatureSupported(ble::controller_supported_features_t::LE_2M_PHY)) {
+        ble::phy_set_t phys(false, true, false);
+
+        ble_error_t error = gap.setPreferredPhys(&phys, &phys);
+        if (error) {
+            print_error(error, "GAP::setPreferedPhys failed");
+        }
+    }
+
+    // Rely on the event queue to advertise the device over BLE
+    queue.call(advertise, &queue);
+}
+
+void schedule_ble_events(BLE::OnEventsToProcessCallbackContext *context)
+{
+    queue.call(Callback<void()>(&context->ble, &BLE::processEvents));
 }
 
 /**
@@ -57,10 +82,38 @@ void read_tof_sensor() {
     }
 }
 
+/**
+ * @brief Initialize the ToF sensors and register interrupts.
+ *
+ * This function raises an assertion error if the sensors
+ * cannot be initialized (need to check API again for this).
+ */
+bool flappy_init() {
+
+    // The BLE class is a singleton
+    BLE &ble = BLE::Instance();
+    ble.onEventsToProcess(schedule_ble_events);
+
+    // Initialize BLE and then call our own function
+    ble_error_t error = ble.init(&on_init_complete);
+    if (error) {
+        print_error(error, "Error returned by BLE::init");
+        return false;
+    }
+
+    // Setup our own listener for specific events.
+    GapHandler handler;
+    auto &gap = ble.gap();
+    gap.setEventHandler(&handler);
+    range.init_sensor(0x53);
+    button.rise(&button1_rise_handler);
+
+    return true;
+}
 
 /**
  * @brief Print (to stdout) information about the distance when
- * BUTTON1 is released.
+ * BUTTON1 is released. For testing purposes only.
  *
  * This function will print a reading from both the 
  * ToF sensor once each time BUTTON1 is released.

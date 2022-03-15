@@ -7,13 +7,15 @@
  */
 #include "not.hpp"
 
-#include "mbed.h"  // for printf
-
 int main()
 {
     printf("Running Not Not Flappy Bird\n");
 
-    flappy_init();
+    bool success = flappy_init();
+    if (!success) return 1;
+
+    // TODO: uncomment for testing
+    // flappy_test();
 
     printf("[WARNING] End of program reached");
     return 0;

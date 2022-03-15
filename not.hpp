@@ -1,10 +1,102 @@
 #ifndef FLAPPY_HPP
 #define FLAPPY_HPP
 
+#include <string>
+#include "mbed.h"  // for printf
+#include "ble/BLE.h"
+#include "ble/Gap.h"
+#include "VL53L0X.h"
+
+// shared varaibles across files
+extern DevI2C devI2c; 
+extern DigitalOut shutdown_pin; 
+extern VL53L0X range; 
+extern InterruptIn button;
+extern EventQueue queue;
+
+/**
+ * @brief Setup the device by advertising it to other devices.
+ *
+ * Advertising setup configures how the device can be used via BLE.
+ * The configuration may setup the device as a specific service.
+ *
+ * @param queue A queue to launch future events on.
+ *
+ * Precondition: BLE has been initialized.
+ */
+void advertise(EventQueue *queue);
+
+/**
+ * @brief A simple listener for some BLE events.
+ */
+class GapHandler : private mbed::NonCopyable<GapHandler>, public ble::Gap::EventHandler
+{
+public:
+    /**
+     * @brief Called when the device starts advertising itself to others.
+     */
+    void onAdvertisingStart(const ble::AdvertisingStartEvent &event) override;
+
+    /**
+     * @brief Called when another device connects to ours.
+     */
+    void onConnectionComplete(const ble::ConnectionCompleteEvent &event) override;
+
+    /**
+     * @brief Called when another connected evice disconnects from ours.
+     */
+    void onDisconnectionComplete(const ble::DisconnectionCompleteEvent &event) override;
+};
+
+/**
+ * @brief A BLE game Service.
+ *
+ * This transmits data to the phone.
+ */
+class GameService
+{
+public:
+    /**
+     * @brief Construct a new game service object
+     */
+    GameService();
+
+    /**
+     * @brief Update current score.
+     */
+    void update_score();
+
+    /**
+     * @brief Update high score.
+     */
+    void update_high_score();
+
+private:
+    /**
+     * @brief The current score.
+     */
+    uint8_t _score;
+
+    /**
+     * @brief The all time high score.
+     */
+    uint8_t _high_score;
+
+    /**
+     * @brief The GATT Characteristic that communicates the current score.
+     */
+    ReadOnlyGattCharacteristic<uint8_t> _score_characteristic;
+
+    /**
+     * @brief The GATT Characteristic that communicates the high score.
+     */
+    ReadOnlyGattCharacteristic<uint8_t> _high_score_characteristic;
+};
+
 /**
  * @brief Initialization (ToF sensor & Bluetooth).
  */
-void flappy_init();
+bool flappy_init();
 
 /**
  * @brief User calibration
