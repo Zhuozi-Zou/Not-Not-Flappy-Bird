@@ -16,8 +16,14 @@ DevI2C devI2c(PB_11, PB_10);
 DigitalOut shutdown_pin(PC_6); 
 VL53L0X range(&devI2c, &shutdown_pin, PC_7); 
 
-// Initialize the user button as interrupt input, using the high level api
+// Initialize the user button as interrupt input
 InterruptIn button(BUTTON1);
+// Initialize LED 1 and 2
+DigitalOut led1(LED1);
+DigitalOut led2(LED2);
+
+// main event queue
+EventQueue queue;
 
 // Application State
 bool button_released_flag = false;
@@ -106,7 +112,7 @@ bool flappy_init() {
     auto &gap = ble.gap();
     gap.setEventHandler(&handler);
     range.init_sensor(0x53);
-    button.rise(&button1_rise_handler);
+    button.rise(queue.event(button1_rise_handler));
 
     return true;
 }

@@ -7,12 +7,17 @@
 #include "ble/Gap.h"
 #include "VL53L0X.h"
 
+#define near_dist 100
+#define far_dist 300
+
 // shared varaibles across files
 extern DevI2C devI2c; 
 extern DigitalOut shutdown_pin; 
 extern VL53L0X range; 
 extern InterruptIn button;
 extern EventQueue queue;
+extern DigitalOut led1;
+extern DigitalOut led2;
 
 /**
  * @brief Setup the device by advertising it to other devices.
@@ -104,9 +109,18 @@ bool flappy_init();
 void calibrate();
 
 /**
- * @brief Main game
+ * @brief Main game - turn on LED lights according to instruction
+ *        and return current instrunction
  */
-void start_game();
+int show_lights();
+
+/**
+ * @brief Main game - read from ToF sensor.
+ *        return true on correct input and false otherwise.
+ */
+bool read_input(int instruction);
+
+void main_game();
 
 /**
  * @brief End of game
