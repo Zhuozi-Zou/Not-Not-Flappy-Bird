@@ -16,6 +16,8 @@ void GapHandler::onConnectionComplete(const ble::ConnectionCompleteEvent &event)
     }
 
     printf("Connection made with %u.\n", event.getConnectionHandle());
+    
+    queue.call_every(10ms, read_tof_sensor);
 }
 
 void GapHandler::onDisconnectionComplete(const ble::DisconnectionCompleteEvent &event)
