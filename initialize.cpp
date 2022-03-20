@@ -113,6 +113,11 @@ bool flappy_init() {
     gap.setEventHandler(&handler);
     range.init_sensor(0x53);
     button.rise(queue.event(button1_rise_handler));
+    
+    GameService game_service{};
+    button.rise(callback(&game_service, &GameService::update_score));
+
+    queue.dispatch_forever();
 
     return true;
 }

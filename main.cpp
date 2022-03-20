@@ -17,6 +17,8 @@ int main()
     // TODO: uncomment for testing
     // flappy_test();
 
+    // ble_test();
+
     printf("[WARNING] End of program reached");
     return 0;
 }

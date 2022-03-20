@@ -127,5 +127,12 @@ void main_game();
  */
 void end_game();
 
+/**
+ * @brief BLE test
+ */
+void ble_test();
+
+void read_tof_sensor();
+
 
 #endif

@@ -41,7 +41,6 @@ void GameService::update_score()
     // TODO: Communicate the updated _charge value over BLE
     BLE &ble = BLE::Instance();
     ble.gattServer().write(_score_characteristic.getValueHandle(), &_score, sizeof(uint8_t));
-    
 }
 
 void GameService::update_high_score()
@@ -50,7 +49,6 @@ void GameService::update_high_score()
     if (_score > _high_score) _high_score = _score;
 
     // TODO: Communicate the updated _charge value over BLE
-    BLE &ble = BLE::Instance();
-    ble.gattServer().write(_high_score_characteristic.getValueHandle(), &_high_score, sizeof(uint8_t));
-    
+    // BLE &ble = BLE::Instance();
+    // ble.gattServer().write(_high_score_characteristic.getValueHandle(), &_high_score, sizeof(uint8_t));
 }
