@@ -6,11 +6,11 @@ GameService::GameService() :
         _score(0),
         _high_score(0),
         _score_characteristic(
-            "12345678-abcd-efgh-9900-flapppyscore", 
+            "12345678-abcd-ef12-9900-f6a0003cc8be", 
             &_score, 
             GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY),
         _high_score_characteristic(
-            "12345678-abcd-efgh-9900-flappppyhigh", 
+            "12345678-abcd-ef12-9900-f6a000032312", 
             &_high_score)
 {
     
@@ -23,7 +23,7 @@ GameService::GameService() :
         &_score_characteristic };
         
     // custom service uuid
-    UUID custom_id("98765432-ijkl-mnop-1999-flapyservice");
+    UUID custom_id("98765432-fedc-baba-1999-f6a03cebf3ce");
     GattService flappy_service(
         custom_id, //GattService::UUID_XXXX_SERVICE,
         characteristics,
