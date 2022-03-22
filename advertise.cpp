@@ -3,7 +3,6 @@
 
 
 static const ble::AdvertisingParameters advertising_params(
-    // CTRL+Click on the advertising type below to see other types.
     ble::advertising_type_t::CONNECTABLE_UNDIRECTED,
     // The interval between advertisements is a trade-off between
     // being discovered lower power usage.

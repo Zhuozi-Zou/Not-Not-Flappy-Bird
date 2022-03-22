@@ -14,11 +14,6 @@ int main()
     bool success = flappy_init();
     if (!success) return 1;
 
-    // TODO: uncomment for testing
-    // flappy_test();
-
-    // ble_test();
-
     printf("[WARNING] End of program reached");
     return 0;
 }

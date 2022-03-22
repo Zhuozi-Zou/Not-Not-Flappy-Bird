@@ -7,6 +7,10 @@
  */
 #include "not.hpp"
 
+instruction_state_t instruction_state = NEW_INSTRUCTION_ON;
+read_input_state_t read_input_state = READ_INPUT_OFF;
+game_state_t game_state = GAME_ENDED;
+
 int show_lights() {
     int not_led = rand() % 2; // 0 or 1
     int instr_led = rand() % 2; // 0, 1, or 2

@@ -75,20 +75,6 @@ void schedule_ble_events(BLE::OnEventsToProcessCallbackContext *context)
 }
 
 /**
- * @brief Read and print (to stdout) the distance.
- */
-void read_tof_sensor() {
-    uint32_t distance;
-    int status;
-    status = range.get_distance(&distance);
-    if (status == VL53L0X_ERROR_NONE) {
-        printf("Range [mm]:            %6d\r\n", distance);
-    } else {
-        printf("Range [mm]:                --\r\n");
-    }
-}
-
-/**
  * @brief Initialize the ToF sensors and register interrupts.
  *
  * This function raises an assertion error if the sensors
@@ -114,31 +100,11 @@ bool flappy_init() {
     range.init_sensor(0x53);
     button.rise(queue.event(button1_rise_handler));
     
+    // TODO: Below 2 lines are just for testing purpose and should be deleted in the future.
     GameService game_service{};
     button.rise(callback(&game_service, &GameService::update_score));
 
     queue.dispatch_forever();
 
     return true;
-}
-
-/**
- * @brief Print (to stdout) information about the distance when
- * BUTTON1 is released. For testing purposes only.
- *
- * This function will print a reading from both the 
- * ToF sensor once each time BUTTON1 is released.
- *
- * This function does not return.
- */
-void flappy_test()
-{
-    while (true) {
-        if (button_released_flag) {
-            read_tof_sensor();
-            button_released_flag = false;
-        }
-        // read_tof_sensor();
-        thread_sleep_for(10);
-    }
 }

@@ -20,16 +20,28 @@ extern DigitalOut led1;
 extern DigitalOut led2;
 
 /**
- * @brief Setup the device by advertising it to other devices.
- *
- * Advertising setup configures how the device can be used via BLE.
- * The configuration may setup the device as a specific service.
- *
- * @param queue A queue to launch future events on.
- *
- * Precondition: BLE has been initialized.
+ * @brief Whether a new instruction needs to be generated.
  */
-void advertise(EventQueue *queue);
+typedef enum {
+    NEW_INSTRUCTION_ON,
+    NEW_INSTRUCTION_OFF
+} instruction_state_t;
+
+/**
+ * @brief Whether the data of the tof sensor needs to be read.
+ */
+typedef enum {
+    READ_INPUT_ON,
+    READ_INPUT_OFF
+} read_input_state_t;
+
+/**
+ * @brief Whether the user is in game.
+ */
+typedef enum {
+    GAME_STARTED,
+    GAME_ENDED
+} game_state_t;
 
 /**
  * @brief A simple listener for some BLE events.
@@ -99,6 +111,18 @@ private:
 };
 
 /**
+ * @brief Setup the device by advertising it to other devices.
+ *
+ * Advertising setup configures how the device can be used via BLE.
+ * The configuration may setup the device as a specific service.
+ *
+ * @param queue A queue to launch future events on.
+ *
+ * Precondition: BLE has been initialized.
+ */
+void advertise(EventQueue *queue);
+
+/**
  * @brief Initialization (ToF sensor & Bluetooth).
  */
 bool flappy_init();
@@ -120,19 +144,16 @@ int show_lights();
  */
 bool read_input(int instruction);
 
+/**
+ * @brief Main game - main loop.
+ *        calls other corresponding functions.
+ */
 void main_game();
 
 /**
  * @brief End of game
  */
 void end_game();
-
-/**
- * @brief BLE test
- */
-void ble_test();
-
-void read_tof_sensor();
 
 
 #endif
