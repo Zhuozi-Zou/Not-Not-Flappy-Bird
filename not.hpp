@@ -141,6 +141,8 @@ int show_lights();
 /**
  * @brief Main game - read from ToF sensor.
  *        return true on correct input and false otherwise.
+ *        Due to the complication of the "alternate" instruction,
+ *        this function will require big updates in future implementatoin
  */
 bool read_input(int instruction);
 

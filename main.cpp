@@ -11,6 +11,8 @@ int main()
 {
     printf("Running Not Not Flappy Bird\n");
 
+    // initialization, which starts ble advertising 
+    // as well as the main game loop
     bool success = flappy_init();
     if (!success) return 1;
 

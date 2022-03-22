@@ -11,12 +11,22 @@ instruction_state_t instruction_state = NEW_INSTRUCTION_ON;
 read_input_state_t read_input_state = READ_INPUT_OFF;
 game_state_t game_state = GAME_ENDED;
 
+// current rate, or interval between each instruction
+// starts off with 3s per instruction, with a minimum
+// rate of 1s per instruction
+int rate = 3000;
+// time counter, evaluated in main_game(), updates 
+// flags and new rate when it reaches current rate.
+int counter = 0;
+
 int show_lights() {
     int not_led = rand() % 2; // 0 or 1
-    int instr_led = rand() % 2; // 0, 1, or 2
+    int instr_led = rand() % 3; // 0, 1, or 2
 
     if (not_led == 1) led1.write(1);
     else led1.write(0);
+    // alternation is slightly more complicated,
+    // will be implemented later
     if (instr_led == 1) led2.write(1);
     else led2.write(0);
 
@@ -25,6 +35,7 @@ int show_lights() {
     return not_led * 10 + instr_led;
 }
 
+// there will be a big update for this 
 bool read_input(int instruction) {
     uint32_t distance;
     int status;
@@ -44,11 +55,19 @@ bool read_input(int instruction) {
 void main_game() {
     int instruction;
     bool input;
-    instruction = show_lights();
-    printf("current instruction: %d\n", instruction);
-    thread_sleep_for(3000);
-    input = read_input(instruction);
-    printf("result: %d\n", (int)input);
+    // do stuff only if currently in game
+    if (game_state == GAME_STARTED) {
+        if (instruction_state == NEW_INSTRUCTION_ON) {
+            instruction = show_lights();
+            printf("current instruction: %d\n", instruction);
+        }
+        // Note that alternation requires multiple input reads
+        // thus 
+        if (read_input_state == READ_INPUT_ON) {
+            input = read_input(instruction);
+            printf("result: %d\n", (int)input);
+        }
+    }
 }
 
 void end_game() {
