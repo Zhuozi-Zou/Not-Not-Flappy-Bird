@@ -35,20 +35,18 @@ GameService::GameService() :
 
 void GameService::update_score()
 {
-    // TODO: update score
     _score++;
 
-    // TODO: Communicate the updated _charge value over BLE
+    // Communicate the updated _score value over BLE
     BLE &ble = BLE::Instance();
     ble.gattServer().write(_score_characteristic.getValueHandle(), &_score, sizeof(uint8_t));
 }
 
 void GameService::update_high_score()
 {
-    // TODO: update high score
     if (_score > _high_score) _high_score = _score;
 
-    // TODO: Communicate the updated _charge value over BLE
+    // TODO: Communicate the updated _high_score value over BLE
     // BLE &ble = BLE::Instance();
     // ble.gattServer().write(_high_score_characteristic.getValueHandle(), &_high_score, sizeof(uint8_t));
 }

@@ -24,16 +24,25 @@ DigitalOut led2(LED2);
 
 // main event queue
 EventQueue queue;
-
-// Application State
-bool button_released_flag = false;
+// // game state
+// game_state_t game_state;
 
 /**
  * @brief Interrupt handler for when the button is released.
  */
 void button1_rise_handler()
 {
-    button_released_flag = true;
+    if (game_state == GAME_INITIALIZED) {
+        game_state = GAME_CALIBRATION;
+    } else if (game_state == GAME_CALIBRATION_PENDING) {
+        game_state = GAME_STARTED;
+    } else if (game_state == GAME_STARTED) {
+        game_state = GAME_PAUSED;
+    } else if (game_state == GAME_PAUSED) {
+        game_state = GAME_STARTED;
+    } else if (game_state == GAME_ENDED_PENDING) {
+        game_state = GAME_RESTARTED;
+    }        
 }
 
 /**
@@ -100,9 +109,11 @@ bool flappy_init() {
     range.init_sensor(0x53);
     button.rise(queue.event(button1_rise_handler));
     
-    // TODO: Below 2 lines are just for testing purpose and should be deleted in the future.
-    GameService game_service{};
-    button.rise(callback(&game_service, &GameService::update_score));
+    // // TODO: Below 2 lines are just for testing purpose and should be deleted in the future.
+    // GameService game_service{};
+    // button.rise(callback(&game_service, &GameService::update_score));
+
+    game_state = GAME_INITIALIZED;
 
     queue.dispatch_forever();
 

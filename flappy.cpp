@@ -7,17 +7,30 @@
  */
 #include "not.hpp"
 
+game_state_t game_state;
+Timeout timer;
+
 instruction_state_t instruction_state = NEW_INSTRUCTION_ON;
 read_input_state_t read_input_state = READ_INPUT_OFF;
-game_state_t game_state = GAME_ENDED;
 
 // current rate, or interval between each instruction
 // starts off with 3s per instruction, with a minimum
 // rate of 1s per instruction
-int rate = 3000;
-// time counter, evaluated in main_game(), updates 
-// flags and new rate when it reaches current rate.
-int counter = 0;
+std::chrono::microseconds rate = 3000ms;
+// reduce the rate when it reaches current rate
+std::chrono::microseconds reduce_rate = 10ms;
+
+void timeout_handler() {
+    read_input_state = READ_INPUT_ENDED;
+    if (rate > 1000ms)
+        rate -= reduce_rate;
+}
+
+void calibrate() {
+    printf("current near distance: %d\n", near_dist);
+    printf("current far distance: %d\n", far_dist);
+    game_state = GAME_CALIBRATION_PENDING;
+}
 
 int show_lights() {
     int not_led = rand() % 2; // 0 or 1
@@ -43,7 +56,7 @@ bool read_input(int instruction) {
     if (status == VL53L0X_ERROR_NONE) {
         printf("Range [mm]:            %6d\r\n", distance);
     } else {
-        printf("Range [mm]:                --\r\n");
+        printf("Range [mm]:            --\r\n");
     }
     if ((instruction == 0 || instruction == 11) && distance <= near_dist + 50)
         return true;
@@ -52,25 +65,61 @@ bool read_input(int instruction) {
     return false;
 }
 
+void analize_input() {
+    printf("analize input\n");
+
+    // TODO
+    if (1) 
+        instruction_state = NEW_INSTRUCTION_ON;
+    else
+        game_state = GAME_ENDED;
+}
+
 void main_game() {
     int instruction;
     bool input;
+
+    if (game_state == GAME_CALIBRATION) {
+        calibrate();
+    }
     // do stuff only if currently in game
-    if (game_state == GAME_STARTED) {
+    else if (game_state == GAME_STARTED) {
         if (instruction_state == NEW_INSTRUCTION_ON) {
             instruction = show_lights();
             printf("current instruction: %d\n", instruction);
+            instruction_state = NEW_INSTRUCTION_OFF;
+            read_input_state = READ_INPUT_STARTED;
+        }
+
+        if (read_input_state == READ_INPUT_STARTED) {
+            timer.attach(&timeout_handler, rate);
+            read_input_state = READ_INPUT_ON;
         }
         // Note that alternation requires multiple input reads
         // thus 
-        if (read_input_state == READ_INPUT_ON) {
+        else if (read_input_state == READ_INPUT_ON) {
             input = read_input(instruction);
             printf("result: %d\n", (int)input);
         }
+        else if (read_input_state == READ_INPUT_ENDED) {
+            analize_input();
+            read_input_state = READ_INPUT_OFF;
+        }
+    }
+    else if (game_state == GAME_ENDED) {
+        end_game();
+        game_state =  GAME_ENDED_PENDING;
+    } 
+    else if (game_state == GAME_RESTARTED) {
+        restart_game();
+        game_state = GAME_INITIALIZED;
     }
 }
 
 void end_game() {
-
+    printf("game end\n");
 }
 
+void restart_game() {
+    printf("game restarted\n");
+}

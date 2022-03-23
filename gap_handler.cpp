@@ -16,11 +16,13 @@ void GapHandler::onConnectionComplete(const ble::ConnectionCompleteEvent &event)
     }
 
     printf("Connection made with %u.\n", event.getConnectionHandle());
-    
+
     queue.call_every(10ms, main_game);
 }
 
 void GapHandler::onDisconnectionComplete(const ble::DisconnectionCompleteEvent &event)
 {
     printf("Disconnected from %u because %u.\n", event.getConnectionHandle(), event.getReason());
+
+    game_state = GAME_ENDED; 
 }

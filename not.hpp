@@ -10,15 +10,6 @@
 #define near_dist 100
 #define far_dist 300
 
-// shared varaibles across files
-extern DevI2C devI2c; 
-extern DigitalOut shutdown_pin; 
-extern VL53L0X range; 
-extern InterruptIn button;
-extern EventQueue queue;
-extern DigitalOut led1;
-extern DigitalOut led2;
-
 /**
  * @brief Whether a new instruction needs to be generated.
  */
@@ -31,17 +22,35 @@ typedef enum {
  * @brief Whether the data of the tof sensor needs to be read.
  */
 typedef enum {
+    READ_INPUT_STARTED,
     READ_INPUT_ON,
+    READ_INPUT_ENDED,
     READ_INPUT_OFF
 } read_input_state_t;
 
 /**
- * @brief Whether the user is in game.
+ * @brief Determine the current game state.
  */
 typedef enum {
+    GAME_INITIALIZED,
+    GAME_CALIBRATION,
+    GAME_CALIBRATION_PENDING,
     GAME_STARTED,
-    GAME_ENDED
+    GAME_PAUSED,
+    GAME_ENDED,
+    GAME_ENDED_PENDING,
+    GAME_RESTARTED
 } game_state_t;
+
+// shared varaibles across files
+extern DevI2C devI2c; 
+extern DigitalOut shutdown_pin; 
+extern VL53L0X range; 
+extern InterruptIn button;
+extern EventQueue queue;
+extern DigitalOut led1;
+extern DigitalOut led2;
+extern game_state_t game_state;
 
 /**
  * @brief A simple listener for some BLE events.
@@ -156,6 +165,11 @@ void main_game();
  * @brief End of game
  */
 void end_game();
+
+/**
+ * @brief Restart game
+ */
+void restart_game();
 
 
 #endif
