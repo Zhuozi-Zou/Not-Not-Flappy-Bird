@@ -93,6 +93,11 @@ public:
     void update_score();
 
     /**
+     * @brief Reset current score.
+     */
+    void reset_score() { _score = 0; }
+
+    /**
      * @brief Update high score.
      */
     void update_high_score();

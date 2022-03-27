@@ -6,12 +6,14 @@
  * @brief main game functions
  */
 #include "not.hpp"
+#include <chrono>
 
 game_state_t game_state;
 Timeout timer;
 
 instruction_state_t instruction_state = NEW_INSTRUCTION_ON;
 read_input_state_t read_input_state = READ_INPUT_OFF;
+GameService game_service{};
 
 // current rate, or interval between each instruction
 // starts off with 3s per instruction, with a minimum
@@ -19,10 +21,12 @@ read_input_state_t read_input_state = READ_INPUT_OFF;
 std::chrono::microseconds rate = 3000ms;
 // reduce the rate when it reaches current rate
 std::chrono::microseconds reduce_rate = 10ms;
+// minimum rate
+std::chrono::microseconds min_rate = 1000ms;
 
 void timeout_handler() {
     read_input_state = READ_INPUT_ENDED;
-    if (rate > 1000ms)
+    if (rate > min_rate)
         rate -= reduce_rate;
 }
 
@@ -69,10 +73,15 @@ void analize_input() {
     printf("analize input\n");
 
     // TODO
-    if (1) 
+    if (1) {
+        game_service.update_score();
         instruction_state = NEW_INSTRUCTION_ON;
-    else
+    }
+    else {
         game_state = GAME_ENDED;
+    }
+    
+    read_input_state = READ_INPUT_OFF;
 }
 
 void main_game() {
@@ -103,23 +112,24 @@ void main_game() {
         }
         else if (read_input_state == READ_INPUT_ENDED) {
             analize_input();
-            read_input_state = READ_INPUT_OFF;
         }
     }
     else if (game_state == GAME_ENDED) {
         end_game();
-        game_state =  GAME_ENDED_PENDING;
     } 
     else if (game_state == GAME_RESTARTED) {
         restart_game();
-        game_state = GAME_INITIALIZED;
     }
 }
 
 void end_game() {
     printf("game end\n");
+    game_state =  GAME_ENDED_PENDING;
 }
 
 void restart_game() {
+    game_service.reset_score();
+
     printf("game restarted\n");
+    game_state = GAME_INITIALIZED;
 }
