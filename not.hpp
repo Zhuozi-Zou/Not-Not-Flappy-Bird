@@ -49,6 +49,7 @@ extern EventQueue queue;
 extern DigitalOut led1;
 extern DigitalOut led2;
 extern game_state_t game_state;
+extern string player_name;
 
 /**
  * @brief A simple listener for some BLE events.
@@ -166,6 +167,12 @@ void main_game();
  * @brief End of game
  */
 void end_game();
+
+
+/**
+ * @brief reads player name via NFC and stores in player_name.
+ */
+bool read_player_name();
 
 
 #endif
