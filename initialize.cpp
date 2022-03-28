@@ -41,7 +41,7 @@ void button1_rise_handler()
     } else if (game_state == GAME_PAUSED) {
         game_state = GAME_STARTED;
     } else if (game_state == GAME_ENDED_PENDING) {
-        game_state = GAME_RESTARTED;
+        game_state = GAME_STARTED;
     }        
 }
 
@@ -107,12 +107,8 @@ bool flappy_init() {
     auto &gap = ble.gap();
     gap.setEventHandler(&handler);
     range.init_sensor(0x53);
-    button.rise(queue.event(button1_rise_handler));
-    
-    // // TODO: Below 2 lines are just for testing purpose and should be deleted in the future.
-    // GameService game_service{};
-    // button.rise(callback(&game_service, &GameService::update_score));
 
+    button.rise(queue.event(button1_rise_handler));
     game_state = GAME_INITIALIZED;
 
     queue.dispatch_forever();

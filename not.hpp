@@ -7,8 +7,7 @@
 #include "ble/Gap.h"
 #include "VL53L0X.h"
 
-#define near_dist 100
-#define far_dist 300
+#define err_value 50
 
 /**
  * @brief Whether a new instruction needs to be generated.
@@ -38,8 +37,7 @@ typedef enum {
     GAME_STARTED,
     GAME_PAUSED,
     GAME_ENDED,
-    GAME_ENDED_PENDING,
-    GAME_RESTARTED
+    GAME_ENDED_PENDING
 } game_state_t;
 
 // shared varaibles across files
@@ -148,17 +146,15 @@ void calibrate();
 
 /**
  * @brief Main game - turn on LED lights according to instruction
- *        and return current instrunction
+ *        and set current instrunction
  */
-int show_lights();
+void show_lights();
 
 /**
  * @brief Main game - read from ToF sensor.
- *        return true on correct input and false otherwise.
- *        Due to the complication of the "alternate" instruction,
- *        this function will require big updates in future implementatoin
+ *        return the current input if read succeed, or 0 otherwise.
  */
-bool read_input(int instruction);
+uint32_t read_input();
 
 /**
  * @brief Main game - main loop.
@@ -170,11 +166,6 @@ void main_game();
  * @brief End of game
  */
 void end_game();
-
-/**
- * @brief Restart game
- */
-void restart_game();
 
 
 #endif
