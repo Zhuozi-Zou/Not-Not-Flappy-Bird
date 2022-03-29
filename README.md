@@ -8,7 +8,8 @@
 2. Install the `BSP_B-L475E-IOT01` library, using [this link](http://os.mbed.com/teams/ST/code/BSP_B-L475E-IOT01/).
 3. Install the `VL53L0X` library, using [this link](https://os.mbed.com/teams/ST/code/VL53L0X/docs/tip/classVL53L0X.html) (Note that simply Googling `VL53L0X` is very likely to lead to to the _incorrect_ link).
 4. Before compiling, **search** for the usage of `wait_ms` in the `VL53L0X` library code, and replace them with `thread_sleep_for`. Unfortunately `wait_ms` is deprecated, and since we use a newer version of `mbed-os`, leaving the code as is will cause compiler errors.
-5. Occasionaly, when we compile our code for the first time, there might be an error related to clocks, time, etc.. We never figured out the cause, but simply reopening Mbed Studio and re-compiling solves the issue.
+5. We are using NFC as well, which requires no installation of an additional library, but requires `mbed_app.json` to have a proper label added. The label added for our board specifically is the `M24SR` driver, which should be included in the json file we submitted. If this line `"target.extra_labels_add": ["M24SR"]` does not exist, the code will fail to compile.
+6. Occasionaly, when we compile our code for the first time, there might be an error related to clocks, time, deprecated options, etc.. We never figured out the cause, but simply re-opening Mbed Studio and re-compiling solves the issue.
 
 ## Introduction
 The **Not Not Flappy Bird** is a simple game that requires the player to make gestures according to
