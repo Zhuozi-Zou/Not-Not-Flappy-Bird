@@ -149,7 +149,7 @@ uint32_t read_input() {
     return 0;
 }
 
-void analize_input() {
+void analyze_input() {
     read_input_state = READ_INPUT_OFF;
 
     bool input_correct = false;
@@ -192,7 +192,7 @@ void main_game() {
             read_input();
         }
         else if (read_input_state == READ_INPUT_ENDED) {
-            analize_input();
+            analyze_input();
         }
     }
     else if (game_state == GAME_ENDED) {
