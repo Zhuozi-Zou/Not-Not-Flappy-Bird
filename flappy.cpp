@@ -66,21 +66,25 @@ void show_lights() {
 
     int not_led = rand() % 2; // 0 or 1
     int instr_led = rand() % 3; // 0, 1, or 2
+    instruction_state = NEW_INSTRUCTION_OFF;
 
     if (not_led == 1) led1.write(1);
     else led1.write(0);
-    // alternation is slightly more complicated,
-    // will be implemented later
+    
     if (instr_led == 1) led2.write(1);
-    else led2.write(0);
+    else if (instr_led == 0) led2.write(0);
+    else instruction_state = ALTER_INSTRUCTION_ON;
 
     // 0 = far, 1 = near, 2 = alternate
     // 10 = near, 11 = far, 12 = stay still
     instruction = not_led * 10 + instr_led;
     printf("current instruction: %d\n", instruction);
     
-    instruction_state = NEW_INSTRUCTION_OFF;
     read_input_state = READ_INPUT_STARTED;
+}
+
+void blinky() {
+    led2 = !led2;
 }
 
 uint32_t read_input() {
@@ -142,6 +146,9 @@ void main_game() {
         // New turn
         if (instruction_state == NEW_INSTRUCTION_ON) {
             show_lights();
+        }
+        else if (instruction_state == ALTER_INSTRUCTION_ON) {
+            blinky();
         }
 
         if (read_input_state == READ_INPUT_STARTED) {

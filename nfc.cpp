@@ -25,6 +25,7 @@ using mbed::Span;
  
 using mbed::nfc::ndef::MessageBuilder;
 
+// player's name
 string player_name;
 
 /**

@@ -14,7 +14,8 @@
  */
 typedef enum {
     NEW_INSTRUCTION_ON,
-    NEW_INSTRUCTION_OFF
+    NEW_INSTRUCTION_OFF,
+    ALTER_INSTRUCTION_ON
 } instruction_state_t;
 
 /**
