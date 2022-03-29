@@ -83,14 +83,16 @@ void calibrate() {
         
     }
 
-    if (game_state == GAME_CALIBRATION_FAR_PENDING && far_dist <= near_dist) {
-        near_dist = default_near_dist;
-        far_dist = default_far_dist;
-        printf("invalid calibration, use default distances instead\n");
-    }
+    if (game_state == GAME_CALIBRATION_FAR_PENDING) {
+        if (far_dist <= near_dist) {
+            near_dist = default_near_dist;
+            far_dist = default_far_dist;
+            printf("invalid calibration, use default distances instead\n");
+        }
 
-    printf("current near distance: %d\n", near_dist);
-    printf("current far distance: %d\n", far_dist);
+        printf("current near distance: %d\n", near_dist);
+        printf("current far distance: %d\n", far_dist);
+    }
 }
 
 void show_lights() {
