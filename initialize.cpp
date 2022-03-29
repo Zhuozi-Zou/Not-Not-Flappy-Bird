@@ -33,8 +33,10 @@ EventQueue queue;
 void button1_rise_handler()
 {
     if (game_state == GAME_INITIALIZED) {
-        game_state = GAME_CALIBRATION;
-    } else if (game_state == GAME_CALIBRATION_PENDING) {
+        game_state = GAME_CALIBRATION_NEAR;
+    } else if (game_state == GAME_CALIBRATION_NEAR_PENDING) {
+        game_state = GAME_CALIBRATION_FAR;
+    } else if (game_state == GAME_CALIBRATION_FAR_PENDING) {
         game_state = GAME_STARTED;
     } else if (game_state == GAME_STARTED) {
         game_state = GAME_PAUSED;

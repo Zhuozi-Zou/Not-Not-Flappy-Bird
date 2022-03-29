@@ -8,6 +8,8 @@
 #include "VL53L0X.h"
 
 #define err_value 50
+#define default_near_dist 150
+#define default_far_dist 250
 
 /**
  * @brief Whether a new instruction needs to be generated.
@@ -33,8 +35,10 @@ typedef enum {
  */
 typedef enum {
     GAME_INITIALIZED,
-    GAME_CALIBRATION,
-    GAME_CALIBRATION_PENDING,
+    GAME_CALIBRATION_NEAR,
+    GAME_CALIBRATION_NEAR_PENDING,
+    GAME_CALIBRATION_FAR,
+    GAME_CALIBRATION_FAR_PENDING,
     GAME_STARTED,
     GAME_PAUSED,
     GAME_ENDED,

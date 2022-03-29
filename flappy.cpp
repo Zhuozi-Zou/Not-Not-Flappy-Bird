@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
+#include <cstdio>
 
 // shared variables
 game_state_t game_state;
@@ -28,10 +29,10 @@ int alter_input = 0;
 uint32_t min_distance = 0;
 // maximum distance during the current read input period
 uint32_t max_distance = 0;
-// default near distance
-uint32_t near_dist = 150;
-// default far distance
-uint32_t far_dist = 250;
+// near distance
+uint32_t near_dist = default_near_dist;
+// far distance
+uint32_t far_dist = default_far_dist;
 
 // current rate, or interval between each instruction
 // starts off with 3s per instruction, with a minimum
@@ -56,17 +57,45 @@ void timeout_handler() {
 }
 
 void calibrate() {
+    if (game_state == GAME_CALIBRATION_NEAR)
+        game_state = GAME_CALIBRATION_NEAR_PENDING;
+    else 
+        game_state = GAME_CALIBRATION_FAR_PENDING;
+    
+    uint32_t distance = 0;
+    int count = 0;
+
+    for (int i = 0; i < 10; i++) {
+        uint32_t input = read_input();
+        distance += input;
+
+        if (input > 0)
+            count++;
+    }
+
+    if (count != 0) { // has valid inputs
+        distance /= (count * 1.0);
+
+        if (game_state == GAME_CALIBRATION_NEAR) {
+            near_dist = distance;
+        } else if (distance - near_dist > 2 * err_value) {
+            far_dist = distance;
+        } else { 
+            near_dist = default_near_dist;
+            printf("invalid calibration, use default distances instead\n");
+        }
+    }
+
     printf("current near distance: %d\n", near_dist);
     printf("current far distance: %d\n", far_dist);
-    game_state = GAME_CALIBRATION_PENDING;
 }
 
 void show_lights() {
+    instruction_state = NEW_INSTRUCTION_OFF;
     reset_input_globals();
 
     int not_led = rand() % 2; // 0 or 1
     int instr_led = rand() % 3; // 0, 1, or 2
-    instruction_state = NEW_INSTRUCTION_OFF;
 
     if (not_led == 1) led1.write(1);
     else led1.write(0);
@@ -93,8 +122,6 @@ uint32_t read_input() {
     status = range.get_distance(&distance);
 
     if (status == VL53L0X_ERROR_NONE) {
-        printf("Range [mm]:            %6d\r\n", distance);
-
         if (prev_input != 0) {
             // from near to far or from far to near
             if ((prev_input <= near_dist && distance >= far_dist) ||
@@ -104,7 +131,8 @@ uint32_t read_input() {
                 min_distance = distance;
             if (distance > max_distance)
                 max_distance = distance;
-        } else {
+        } 
+        else {
             min_distance = distance;
             max_distance = distance;
         }
@@ -113,11 +141,12 @@ uint32_t read_input() {
         return distance;
     }
     
-    printf("Range [mm]:            --\r\n");
     return 0;
 }
 
 void analize_input() {
+    read_input_state = READ_INPUT_OFF;
+
     bool input_correct = false;
     
     if (((instruction == 0 || instruction == 11) && prev_input >= far_dist) || 
@@ -129,16 +158,13 @@ void analize_input() {
     if (input_correct) {
         game_service.update_score();
         instruction_state = NEW_INSTRUCTION_ON;
-    }
-    else {
+    } else {
         game_state = GAME_ENDED;
     }
-    
-    read_input_state = READ_INPUT_OFF;
 }
 
 void main_game() {
-    if (game_state == GAME_CALIBRATION) {
+    if (game_state == GAME_CALIBRATION_NEAR || game_state == GAME_CALIBRATION_FAR) {
         calibrate();
     }
     // Do stuff only if currently in game
@@ -152,8 +178,8 @@ void main_game() {
         }
 
         if (read_input_state == READ_INPUT_STARTED) {
-            timer.attach(&timeout_handler, rate);
             read_input_state = READ_INPUT_ON;
+            timer.attach(&timeout_handler, rate);
         }
         // Note that alternation requires multiple input reads
         // thus needs change later.
@@ -170,16 +196,15 @@ void main_game() {
 }
 
 void end_game() {
+    instruction_state = NEW_INSTRUCTION_ON;
+    read_input_state = READ_INPUT_OFF;
+    game_state =  GAME_ENDED_PENDING;
+
     game_service.update_high_score();
-    
     printf("game end\n");
     
     game_service.reset_score();
     reset_input_globals();
-    near_dist = 150;
-    far_dist = 250;
-
-    instruction_state = NEW_INSTRUCTION_ON;
-    read_input_state = READ_INPUT_OFF;
-    game_state =  GAME_ENDED_PENDING;
+    near_dist = default_near_dist;
+    far_dist = default_far_dist;
 }
