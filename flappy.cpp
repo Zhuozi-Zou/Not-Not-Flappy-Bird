@@ -83,7 +83,7 @@ void calibrate() {
         
     }
 
-    if (far_dist <= near_dist) {
+    if (game_state == GAME_CALIBRATION_FAR_PENDING && far_dist <= near_dist) {
         near_dist = default_near_dist;
         far_dist = default_far_dist;
         printf("invalid calibration, use default distances instead\n");
