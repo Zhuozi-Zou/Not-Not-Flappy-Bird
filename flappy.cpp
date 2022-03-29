@@ -76,7 +76,7 @@ void calibrate() {
     if (count != 0) { // has valid inputs
         distance /= (count * 1.0);
 
-        if (game_state == GAME_CALIBRATION_NEAR) 
+        if (game_state == GAME_CALIBRATION_NEAR_PENDING) 
             near_dist = distance + err_value;
         else 
             far_dist = distance - err_value;
