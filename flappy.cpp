@@ -76,14 +76,17 @@ void calibrate() {
     if (count != 0) { // has valid inputs
         distance /= (count * 1.0);
 
-        if (game_state == GAME_CALIBRATION_NEAR) {
-            near_dist = distance;
-        } else if (distance - near_dist > 2 * err_value) {
-            far_dist = distance;
-        } else { 
-            near_dist = default_near_dist;
-            printf("invalid calibration, use default distances instead\n");
-        }
+        if (game_state == GAME_CALIBRATION_NEAR) 
+            near_dist = distance + err_value;
+        else 
+            far_dist = distance - err_value;
+        
+    }
+
+    if (far_dist <= near_dist) {
+        near_dist = default_near_dist;
+        far_dist = default_far_dist;
+        printf("invalid calibration, use default distances instead\n");
     }
 
     printf("current near distance: %d\n", near_dist);
