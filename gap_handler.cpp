@@ -16,6 +16,7 @@ void GapHandler::onConnectionComplete(const ble::ConnectionCompleteEvent &event)
     }
 
     printf("Connection made with %u.\n", event.getConnectionHandle());
+    printf("Please put your hand to the \"near distance\" and press the user button\n");
 
     queue.call_every(10ms, main_game);
 }

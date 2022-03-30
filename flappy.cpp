@@ -83,6 +83,9 @@ void calibrate() {
         
     }
 
+    if (game_state == GAME_CALIBRATION_NEAR_PENDING) 
+        printf("Please put your hand to the \"far distance\" and press the user button\n");
+
     if (game_state == GAME_CALIBRATION_FAR_PENDING) {
         if (far_dist <= near_dist) {
             near_dist = default_near_dist;
