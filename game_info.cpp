@@ -46,7 +46,7 @@ void GameService::update_high_score()
 {
     if (_score > _high_score) _high_score = _score;
 
-    // TODO: Communicate the updated _high_score value over BLE
-    // BLE &ble = BLE::Instance();
-    // ble.gattServer().write(_high_score_characteristic.getValueHandle(), &_high_score, sizeof(uint8_t));
+    // Communicate the updated _high_score value over BLE
+    BLE &ble = BLE::Instance();
+    ble.gattServer().write(_high_score_characteristic.getValueHandle(), &_high_score, sizeof(uint8_t));
 }
