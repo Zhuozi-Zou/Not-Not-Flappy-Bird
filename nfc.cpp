@@ -59,7 +59,7 @@ public:
 private:
     virtual void on_ndef_message_written(nfc_err_t result) {
         if (result == NFC_OK) {
-            printf("cleared current tag\r\n");
+            printf("Please enter your name via NFC:\r\n");
         } else {
             printf("failed to write (error: %d)\r\n", result);
         }
@@ -75,6 +75,10 @@ private:
  
     virtual void parse_ndef_message(const Span<const uint8_t> &buffer) {        
         if (!buffer.empty()) {
+            // first 7 bytes work as a "header" to indicate the type
+            // i.e. what we're using is a "Text" type
+            // since buffer is already a Span, it's easiest to parse
+            // the actual message component by reading from byte 8
             Span<const uint8_t> result = buffer.last(buffer.size()-7);
             std::string s( result.data(), result.data()+result.size() );
             player_name = s;
@@ -83,8 +87,6 @@ private:
     }
  
     virtual size_t build_ndef_message(const Span<uint8_t> &buffer) {
-        printf("Building an ndef message\r\n");
- 
         // empty builder
         MessageBuilder builder(buffer);
 

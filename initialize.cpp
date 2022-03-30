@@ -92,9 +92,8 @@ void schedule_ble_events(BLE::OnEventsToProcessCallbackContext *context)
  * cannot be initialized (need to check API again for this).
  */
 bool flappy_init() {
-    printf("please enter your name using NFC\n");
-    assert(read_player_name());
-    printf("current player: %s\n\n", player_name.c_str());
+    // assert(read_player_name());
+    // printf("current player: %s\n\n", player_name.c_str());
 
     // The BLE class is a singleton
     BLE &ble = BLE::Instance();

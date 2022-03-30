@@ -10,6 +10,7 @@
 #include <chrono>
 #include <cstdint>
 #include <cstdio>
+#include <iterator>
 
 // shared variables
 game_state_t game_state;
@@ -21,6 +22,8 @@ GameService game_service{};
 
 // current instruction
 int instruction;
+// previous instruction
+int prev_instruction = -1;
 // previous input
 uint32_t prev_input = 0;
 // number of alternations (far to near/near to far) during the current read input period
@@ -104,6 +107,16 @@ void show_lights() {
 
     int not_led = rand() % 2; // 0 or 1
     int instr_led = rand() % 3; // 0, 1, or 2
+    // 0 = far, 1 = near, 2 = alternate
+    // 10 = near, 11 = far, 12 = stay still
+    instruction = not_led * 10 + instr_led;
+
+    // "stay still" instruction cannot be first one or right after alternate
+    while (instruction == 12 && (prev_instruction == -1 || prev_instruction == 2)) {
+        not_led = rand() % 2;
+        instr_led = rand() % 3;
+        instruction = not_led * 10 + instr_led;
+    }
 
     if (not_led == 1) led1.write(1);
     else led1.write(0);
@@ -112,12 +125,10 @@ void show_lights() {
     else if (instr_led == 0) led2.write(0);
     else instruction_state = ALTER_INSTRUCTION_ON;
 
-    // 0 = far, 1 = near, 2 = alternate
-    // 10 = near, 11 = far, 12 = stay still
-    instruction = not_led * 10 + instr_led;
     printf("current instruction: %d\n", instruction);
     
     read_input_state = READ_INPUT_STARTED;
+    prev_instruction = instruction;
 }
 
 void blinky() {
@@ -159,8 +170,8 @@ void analyze_input() {
     
     if (((instruction == 0 || instruction == 11) && prev_input >= far_dist) || 
         ((instruction == 1 || instruction == 10) && prev_input <= near_dist) ||
-        (instruction == 2 && alter_input >= 4) ||
-        (instruction == 12 && (max_distance - min_distance <= err_value * 0.5)))
+        (instruction == 2 && alter_input >= 3) ||
+        (instruction == 12 && (max_distance - min_distance <= err_value * 0.8)))
         input_correct = true;
 
     if (input_correct) {
