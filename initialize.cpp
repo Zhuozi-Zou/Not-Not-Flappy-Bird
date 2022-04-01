@@ -40,7 +40,7 @@ void button1_rise_handler()
         game_state = GAME_STARTED;
     } else if (game_state == GAME_STARTED) {
         game_state = GAME_PAUSED;
-    } else if (game_state == GAME_PAUSED) {
+    } else if (game_state == GAME_PAUSED_PENDING) {
         game_state = GAME_STARTED;
     } else if (game_state == GAME_ENDED_PENDING) {
         game_state = GAME_STARTED;

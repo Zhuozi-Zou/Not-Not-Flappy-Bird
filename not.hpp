@@ -41,6 +41,7 @@ typedef enum {
     GAME_CALIBRATION_FAR_PENDING,
     GAME_STARTED,
     GAME_PAUSED,
+    GAME_PAUSED_PENDING,
     GAME_ENDED,
     GAME_ENDED_PENDING
 } game_state_t;

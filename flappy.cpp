@@ -54,9 +54,11 @@ void reset_input_globals() {
 }
 
 void timeout_handler() {
-    read_input_state = READ_INPUT_ENDED;
-    if (rate > min_rate)
-        rate -= reduce_rate;
+    if (game_state == GAME_STARTED) {
+        read_input_state = READ_INPUT_ENDED;
+        if (rate > min_rate)
+            rate -= reduce_rate;
+    }
 }
 
 void calibrate() {
@@ -96,8 +98,9 @@ void calibrate() {
             printf("invalid calibration, use default distances instead\n");
         }
 
-        printf("current near distance: %d\n", near_dist);
-        printf("current far distance: %d\n", far_dist);
+        printf("current near distance: %d\n", near_dist - err_value);
+        printf("current far distance: %d\n", far_dist + err_value);
+        printf("Please press the user button to start the game\n");
     }
 }
 
@@ -208,6 +211,11 @@ void main_game() {
         else if (read_input_state == READ_INPUT_ENDED) {
             analyze_input();
         }
+    }
+    else if (game_state == GAME_PAUSED) {
+        game_state = GAME_PAUSED_PENDING;
+        printf("game paused\n");
+        instruction_state = NEW_INSTRUCTION_ON;
     }
     else if (game_state == GAME_ENDED) {
         end_game();

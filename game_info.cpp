@@ -11,7 +11,8 @@ GameService::GameService() :
             GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY),
         _high_score_characteristic(
             "12345678-abcd-ef12-9900-f6a000032312", 
-            &_high_score)
+            &_high_score, 
+            GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY)
 {
     
     uint32_t status;
