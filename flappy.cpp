@@ -42,7 +42,7 @@ uint32_t far_dist = default_far_dist;
 // rate of 1s per instruction
 std::chrono::microseconds rate = 3000ms;
 // reduce the rate when it reaches current rate
-std::chrono::microseconds reduce_rate = 10ms;
+std::chrono::microseconds reduce_rate = 25ms;
 // minimum rate
 std::chrono::microseconds min_rate = 1000ms;
 
