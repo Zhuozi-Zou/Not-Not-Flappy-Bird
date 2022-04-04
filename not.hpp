@@ -17,7 +17,9 @@
 typedef enum {
     NEW_INSTRUCTION_ON,
     NEW_INSTRUCTION_OFF,
-    ALTER_INSTRUCTION_ON
+    ALTER_INSTRUCTION_ON,
+    END_INSTRUCTION_START,
+    END_INSTRUCTION_ON
 } instruction_state_t;
 
 /**
@@ -39,12 +41,28 @@ typedef enum {
     GAME_CALIBRATION_NEAR_PENDING,
     GAME_CALIBRATION_FAR,
     GAME_CALIBRATION_FAR_PENDING,
+    GAME_TUTORIAL,
     GAME_STARTED,
     GAME_PAUSED,
     GAME_PAUSED_PENDING,
+    GAME_ENDING,
     GAME_ENDED,
     GAME_ENDED_PENDING
 } game_state_t;
+
+/**
+ * @brief Determine the current tutorial state.
+ *        Essentially an extention of the game state, 
+ *        but kept separate for easier use and organization.
+ */
+typedef enum {
+    TUTORIAL_NEAR,
+    TUTORIAL_FAR,
+    TUTORIAL_ALT,
+    TUTORIAL_NOT,
+    TUTORIAL_PAUSE,
+    TUTORIAL_GAME_END
+} tutorial_state_t;
 
 // shared varaibles across files
 extern DevI2C devI2c; 
@@ -55,6 +73,7 @@ extern EventQueue queue;
 extern DigitalOut led1;
 extern DigitalOut led2;
 extern game_state_t game_state;
+extern tutorial_state_t tutorial_state;
 extern string player_name;
 
 /**
@@ -152,6 +171,11 @@ bool flappy_init();
 void calibrate();
 
 /**
+ * @brief Tutorial that's just reading, looking at lights, and pressing button.
+ */
+void tutorial();
+
+/**
  * @brief Main game - turn on LED lights according to instruction
  *        and set current instrunction
  */
@@ -164,6 +188,12 @@ void show_lights();
 uint32_t read_input();
 
 /**
+ * @brief Main game - analyzes input by comparing reader results
+ *        with the current instruction.
+ */
+void analyze_input();
+
+/**
  * @brief Main game - main loop.
  *        calls other corresponding functions.
  */
@@ -173,7 +203,6 @@ void main_game();
  * @brief End of game
  */
 void end_game();
-
 
 /**
  * @brief reads player name via NFC and stores in player_name.

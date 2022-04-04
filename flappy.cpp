@@ -14,6 +14,7 @@
 
 // shared variables
 game_state_t game_state;
+tutorial_state_t tutorial_state;
 Timeout timer;
 
 instruction_state_t instruction_state = NEW_INSTRUCTION_ON;
@@ -24,6 +25,8 @@ GameService game_service{};
 int instruction;
 // previous instruction
 int prev_instruction = -1;
+// counter for how many times LEDs blinked at end of game
+int end_blink = 0;
 // previous input
 uint32_t prev_input = 0;
 // number of alternations (far to near/near to far) during the current read input period
@@ -44,13 +47,14 @@ std::chrono::microseconds rate = 3000ms;
 // reduce the rate when it reaches current rate
 std::chrono::microseconds reduce_rate = 25ms;
 // minimum rate
-std::chrono::microseconds min_rate = 1000ms;
+std::chrono::microseconds min_rate = 1100ms;
 
 void reset_input_globals() {
     prev_input = 0;
     alter_input = 0;
     min_distance = 0;
     max_distance = 0;
+    end_blink = 0;
 }
 
 void timeout_handler() {
@@ -59,6 +63,15 @@ void timeout_handler() {
         if (rate > min_rate)
             rate -= reduce_rate;
     }
+    else if (game_state == GAME_ENDING) {
+        led1.write(0);
+        led2.write(0);
+        game_state = GAME_ENDED;
+    }
+}
+
+void tutorial() {
+
 }
 
 void calibrate() {
@@ -134,8 +147,15 @@ void show_lights() {
     prev_instruction = instruction;
 }
 
+/**
+ * @brief small helper that simply blinks LED1 or 2
+ */
 void blinky() {
     led2 = !led2;
+    if (game_state == GAME_ENDING) {
+        led1 = !led1;
+        thread_sleep_for(75);
+    }
 }
 
 uint32_t read_input() {
@@ -181,12 +201,16 @@ void analyze_input() {
         game_service.update_score();
         instruction_state = NEW_INSTRUCTION_ON;
     } else {
-        game_state = GAME_ENDED;
+        game_state = GAME_ENDING;
+        instruction_state = END_INSTRUCTION_START;
     }
 }
 
 void main_game() {
-    if (game_state == GAME_CALIBRATION_NEAR || game_state == GAME_CALIBRATION_FAR) {
+    if (game_state == GAME_TUTORIAL) {
+        tutorial();
+    }
+    else if (game_state == GAME_CALIBRATION_NEAR || game_state == GAME_CALIBRATION_FAR) {
         calibrate();
     }
     // Do stuff only if currently in game
@@ -212,6 +236,15 @@ void main_game() {
             analyze_input();
         }
     }
+    else if (game_state == GAME_ENDING) {
+        if (instruction_state == END_INSTRUCTION_START) {
+            led1.write(0);
+            led2.write(0);
+            instruction_state = END_INSTRUCTION_ON;
+            timer.attach(&timeout_handler, 500ms);
+        }
+        blinky();
+    }
     else if (game_state == GAME_PAUSED) {
         game_state = GAME_PAUSED_PENDING;
         printf("game paused\n");
@@ -232,7 +265,7 @@ void end_game() {
     
     game_service.reset_score();
     reset_input_globals();
-    near_dist = default_near_dist;
-    far_dist = default_far_dist;
+    // near_dist = default_near_dist;
+    // far_dist = default_far_dist;
     prev_instruction = -1;
 }
