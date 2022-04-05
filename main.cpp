@@ -9,7 +9,7 @@
 
 int main()
 {
-    printf("Running Not Not Flappy Bird\n");
+    printf("\n\n ===== Welcome to Not Not Flappy Bird! =====\n\n");
 
     // initialization, which starts ble advertising 
     // as well as the main game loop

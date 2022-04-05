@@ -32,21 +32,37 @@ EventQueue queue;
  */
 void button1_rise_handler()
 {
+    // set printing to true
+    print_flag = true;
+    // update states
     if (game_state == GAME_INITIALIZED) {
         game_state = GAME_CALIBRATION_NEAR;
     } else if (game_state == GAME_CALIBRATION_NEAR_PENDING) {
         game_state = GAME_CALIBRATION_FAR;
     } else if (game_state == GAME_CALIBRATION_FAR_PENDING) {
-        game_state = GAME_STARTED;
+        game_state = GAME_TUTORIAL;
     } else if (game_state == GAME_TUTORIAL) {
-        game_state = GAME_STARTED;
+        if (tutorial_state == TUTORIAL_START)
+            tutorial_state = TUTORIAL_NEAR;
+        else if (tutorial_state == TUTORIAL_NEAR)
+            tutorial_state = TUTORIAL_FAR;
+        else if (tutorial_state == TUTORIAL_FAR)
+            tutorial_state = TUTORIAL_ALT;
+        else if (tutorial_state == TUTORIAL_ALT)
+            tutorial_state = TUTORIAL_NOT;
+        else if (tutorial_state == TUTORIAL_NOT)
+            tutorial_state = TUTORIAL_PAUSE;
+        else if (tutorial_state == TUTORIAL_PAUSE)
+            tutorial_state = TUTORIAL_GAME_END;
+        else if (tutorial_state == TUTORIAL_GAME_END)
+            game_state = GAME_STARTED;
     } else if (game_state == GAME_STARTED) {
         game_state = GAME_PAUSED;
     } else if (game_state == GAME_PAUSED_PENDING) {
         game_state = GAME_STARTED;
     } else if (game_state == GAME_ENDED_PENDING) {
         game_state = GAME_STARTED;
-    }        
+    }
 }
 
 /**
@@ -94,8 +110,9 @@ void schedule_ble_events(BLE::OnEventsToProcessCallbackContext *context)
  * cannot be initialized (need to check API again for this).
  */
 bool flappy_init() {
-    // assert(read_player_name());
-    // printf("current player: %s\n\n", player_name.c_str());
+    assert(read_player_name());
+    printf("Welcome, *%s*!\n\n", player_name.c_str());
+    printf("Please connect your smartphone to the board using bluetooth.\n");
 
     // The BLE class is a singleton
     BLE &ble = BLE::Instance();
@@ -116,6 +133,7 @@ bool flappy_init() {
 
     button.rise(queue.event(button1_rise_handler));
     game_state = GAME_INITIALIZED;
+    tutorial_state = TUTORIAL_START;
 
     queue.dispatch_forever();
 

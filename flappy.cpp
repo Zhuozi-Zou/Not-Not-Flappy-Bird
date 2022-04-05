@@ -39,6 +39,8 @@ uint32_t max_distance = 0;
 uint32_t near_dist = default_near_dist;
 // far distance
 uint32_t far_dist = default_far_dist;
+// print flag indicating whether instructions should be printed or not
+bool print_flag = false;
 
 // current rate, or interval between each instruction
 // starts off with 3s per instruction, with a minimum
@@ -70,8 +72,19 @@ void timeout_handler() {
     }
 }
 
-void tutorial() {
-
+/**
+ * @brief small helper that simply blinks LED1 or 2
+ */
+void blinky() {
+    led2 = !led2;
+    if (game_state == GAME_ENDING) {
+        led1 = !led1;
+        thread_sleep_for(75);
+    }
+    else if (game_state == GAME_TUTORIAL) {
+        if (tutorial_state == TUTORIAL_GAME_END) led1 = !led1;
+        thread_sleep_for(100);
+    }
 }
 
 void calibrate() {
@@ -101,23 +114,115 @@ void calibrate() {
         
     }
 
-    if (game_state == GAME_CALIBRATION_NEAR_PENDING) 
-        printf("Please put your hand to the \"far distance\" and press the user button\n");
+    if (game_state == GAME_CALIBRATION_NEAR_PENDING) {
+        printf("Now move your hand farther the sensor (move >10 cm, for best experience), and press the blue user button when you're ready.\n");
+        printf("This will be recorded as your \"far\" distance.\n");
+    }
 
     if (game_state == GAME_CALIBRATION_FAR_PENDING) {
+        printf("\n\n ===== Calibration Complete! =====\n\n");
+
         if (far_dist <= near_dist) {
             near_dist = default_near_dist;
             far_dist = default_far_dist;
-            printf("invalid calibration, use default distances instead\n");
+            printf("Sorry, the difference between your near and far distances are too small. \n");
+            printf("We will be using the default settings instead.\n\n");
         }
 
-        printf("current near distance: %d\n", near_dist - err_value);
-        printf("current far distance: %d\n", far_dist + err_value);
-        printf("Please press the user button to start the game\n");
+        printf("Current near distance: %dmm\n", near_dist - err_value);
+        printf("Current far distance: %dmm\n\n", far_dist + err_value);
+        printf("Please press the user button to start the tutorial.\n\n");
+    }
+}
+
+void tutorial() {
+    if (tutorial_state == TUTORIAL_START) {
+        if (print_flag) {
+            printf("\n\n ===== Tutorial =====\n\n");
+            printf("This game is simply played by moving your hand close to or far from the distance sensor according to instructions given.\n");
+            printf("There are a total of 3 different basic instructions, plus the negation of those 3, making a total of 6.\n");
+            printf("Instructions will be given using the two LED lights ob the board, which we will walk you through later.\n\n");
+            printf("You can press the blue user button to progress through this tutorial.\n");
+            printf("Now, press the button when you're ready to learn about the instructions...\n\n");
+            print_flag = false;
+        }
+    }
+    else if (tutorial_state == TUTORIAL_NEAR) {
+        if (print_flag) {
+            printf("1. \"Near\"\n");
+            printf("   => the #instruction LED# lights up\n");
+            printf("   => move your hand near the sensor\n");
+            printf("   => a \"near\" distance was defined through the calibration earlier\n\n");
+            print_flag = false;
+        }
+        led2.write(1);
+    }
+    else if (tutorial_state == TUTORIAL_FAR) {
+        if (print_flag) {
+            printf("2. \"Far\"\n");
+            printf("   => the #instruction LED# stays off\n");
+            printf("   => move your hand far from the sensor\n");
+            printf("   => a \"far\" distance was defined through the calibration earlier\n\n");
+            print_flag = false;
+        }
+        led2.write(0);
+    }
+    else if (tutorial_state == TUTORIAL_ALT) {
+        if (print_flag) {
+            printf("3. \"Alternate\"\n");
+            printf("   => the #instruction LED# flashes\n");
+            printf("   => *quickly alternate* your hand between near and far\n\n");
+            print_flag = false;
+        }
+        blinky();
+    }
+    else if (tutorial_state == TUTORIAL_NOT) {
+        if (print_flag) {
+            printf("4. \"Not\"\n");
+            printf("   => when the #not LED# lights up, along with any 3 state of the #instruction LED#\n");
+            printf("   => this *negates* whatever instruction is given by the #instruction LED#, where:\n");
+            printf("      -> \"not near\" = \"far\"\n");
+            printf("      -> \"not far\" = \"near\"\n");
+            printf("      -> \"not alternate\" = \"stay still\", do not move your hand\n\n");
+            print_flag = false;
+        }
+        led2.write(0);
+        led1.write(1);
+    }
+    else if (tutorial_state == TUTORIAL_PAUSE) {
+        if (print_flag) {
+            printf("5. Pausing the Game\n");
+            printf("   => at any time of the game, you can press the user button to pause the game play, and the two LEDs will remain the same\n");
+            printf("   => pressing the button again will resume the game, and a random *new instruction* will be given\n\n");
+            print_flag = false;
+        }
+    }
+    else if (tutorial_state == TUTORIAL_GAME_END) {
+        if (print_flag) {
+            printf("6. Game End\n");
+            printf("   => for each instruction, the correct move must be made within a given timeframe\n");
+            printf("   => as the game progresses, this timeframe gets shorter\n");
+            printf("   => if your move does not match the given instruction, the game ends, and both LEDs would flash\n");
+            printf("   => you can check your phone for your current score and high score, which is sent via bluetooth\n");
+            printf("   => TIP: turn on *notify* to have live score updates! \n\n");
+            printf("Once you're ready, press the user button to start playing the game! \n");
+            led2.write(0);
+            led1.write(0);
+            print_flag = false;
+        }
+        blinky();
     }
 }
 
 void show_lights() {
+    if (print_flag) {
+        if (prev_instruction == -1)
+            printf("\n\n ===== New Game Started! =====\n\n");
+        else
+            printf(" --- Resume Game ---\n");
+        print_flag = false;
+    }
+
     instruction_state = NEW_INSTRUCTION_OFF;
     reset_input_globals();
 
@@ -141,21 +246,10 @@ void show_lights() {
     else if (instr_led == 0) led2.write(0);
     else instruction_state = ALTER_INSTRUCTION_ON;
 
-    printf("current instruction: %d\n", instruction);
+    // printf("current instruction: %d\n", instruction);
     
     read_input_state = READ_INPUT_STARTED;
     prev_instruction = instruction;
-}
-
-/**
- * @brief small helper that simply blinks LED1 or 2
- */
-void blinky() {
-    led2 = !led2;
-    if (game_state == GAME_ENDING) {
-        led1 = !led1;
-        thread_sleep_for(75);
-    }
 }
 
 uint32_t read_input() {
@@ -207,11 +301,11 @@ void analyze_input() {
 }
 
 void main_game() {
-    if (game_state == GAME_TUTORIAL) {
-        tutorial();
-    }
-    else if (game_state == GAME_CALIBRATION_NEAR || game_state == GAME_CALIBRATION_FAR) {
+    if (game_state == GAME_CALIBRATION_NEAR || game_state == GAME_CALIBRATION_FAR) {
         calibrate();
+    }
+    else if (game_state == GAME_TUTORIAL) {
+        tutorial();
     }
     // Do stuff only if currently in game
     else if (game_state == GAME_STARTED) {
@@ -247,7 +341,7 @@ void main_game() {
     }
     else if (game_state == GAME_PAUSED) {
         game_state = GAME_PAUSED_PENDING;
-        printf("game paused\n");
+        printf(" --- Game Paused ---\n");
         instruction_state = NEW_INSTRUCTION_ON;
     }
     else if (game_state == GAME_ENDED) {
@@ -261,7 +355,9 @@ void end_game() {
     game_state =  GAME_ENDED_PENDING;
 
     game_service.update_high_score();
-    printf("game end\n");
+    printf("\n\n ===== Game END =====\n\n");
+    printf("Check your phone for your score and high score!\n");
+    printf("You can press the user button again to start a new game.\n");
     
     game_service.reset_score();
     reset_input_globals();

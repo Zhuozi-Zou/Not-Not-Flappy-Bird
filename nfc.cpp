@@ -26,7 +26,7 @@ using mbed::Span;
 using mbed::nfc::ndef::MessageBuilder;
 
 // player's name
-string player_name;
+string player_name = "Mario";
 
 /**
  * @brief Player Info reader via NFC
@@ -53,13 +53,13 @@ public:
         _eeprom.set_delegate(this);
  
         _queue.call(&_eeprom, &NFCEEPROM::write_ndef_message);
-        _queue.call_every(1000ms, &_eeprom, &NFCEEPROM::read_ndef_message);
+        _queue.call_every(1500ms, &_eeprom, &NFCEEPROM::read_ndef_message);
     }
  
 private:
     virtual void on_ndef_message_written(nfc_err_t result) {
         if (result == NFC_OK) {
-            printf("Please enter your name via NFC:\r\n");
+            printf("Please tell us your name by sending it to the board via NFC.\r\n");
         } else {
             printf("failed to write (error: %d)\r\n", result);
         }

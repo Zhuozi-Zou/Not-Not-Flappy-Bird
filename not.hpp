@@ -56,6 +56,7 @@ typedef enum {
  *        but kept separate for easier use and organization.
  */
 typedef enum {
+    TUTORIAL_START,
     TUTORIAL_NEAR,
     TUTORIAL_FAR,
     TUTORIAL_ALT,
@@ -75,6 +76,7 @@ extern DigitalOut led2;
 extern game_state_t game_state;
 extern tutorial_state_t tutorial_state;
 extern string player_name;
+extern bool print_flag;
 
 /**
  * @brief A simple listener for some BLE events.
