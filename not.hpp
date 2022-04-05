@@ -121,7 +121,7 @@ public:
     /**
      * @brief Reset current score.
      */
-    void reset_score() { _score = 0; }
+    void reset_score();
 
     /**
      * @brief Update high score.

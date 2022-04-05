@@ -218,8 +218,10 @@ void tutorial() {
 
 void show_lights() {
     if (print_flag) {
-        if (prev_instruction == -1)
+        if (prev_instruction == -1) {
             printf("\n\n ===== New Game Started! =====\n\n");
+            game_service.reset_score();
+        }
         else
             printf(" --- Resume Game ---\n");
         print_flag = false;
@@ -361,7 +363,6 @@ void end_game() {
     printf("Check your phone for your score and high score!\n");
     printf("You can press the user button again to start a new game.\n");
     
-    game_service.reset_score();
     reset_input_globals();
     prev_instruction = -1;
     rate = default_rate;
