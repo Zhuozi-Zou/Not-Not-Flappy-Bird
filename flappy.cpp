@@ -361,7 +361,5 @@ void end_game() {
     
     game_service.reset_score();
     reset_input_globals();
-    // near_dist = default_near_dist;
-    // far_dist = default_far_dist;
     prev_instruction = -1;
 }
