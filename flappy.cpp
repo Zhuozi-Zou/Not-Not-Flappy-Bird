@@ -42,12 +42,14 @@ uint32_t far_dist = default_far_dist;
 // print flag indicating whether instructions should be printed or not
 bool print_flag = false;
 
+// the default rate
+std::chrono::microseconds default_rate = 3000ms;
 // current rate, or interval between each instruction
 // starts off with 3s per instruction, with a minimum
-// rate of 1s per instruction
-std::chrono::microseconds rate = 3000ms;
+// rate of 1.1s per instruction
+std::chrono::microseconds rate = default_rate;
 // reduce the rate when it reaches current rate
-std::chrono::microseconds reduce_rate = 25ms;
+std::chrono::microseconds reduce_rate = 50ms;
 // minimum rate
 std::chrono::microseconds min_rate = 1100ms;
 
@@ -361,7 +363,6 @@ void end_game() {
     
     game_service.reset_score();
     reset_input_globals();
-    // near_dist = default_near_dist;
-    // far_dist = default_far_dist;
     prev_instruction = -1;
+    rate = default_rate;
 }
